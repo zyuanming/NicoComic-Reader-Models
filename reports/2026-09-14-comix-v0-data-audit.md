@@ -34,10 +34,16 @@ The generated COCO subset contains 449 pages and 2,542 boxes. It splits by `book
 
 The next experiment uses the existing Apache-2.0 YOLOX-Nano code with a fixed `640 × 640` inference tensor. Source pages are decoded once, aspect fitted, and their normalized boxes map back to the original page. This makes model compute materially smaller than the current fixed `1280 × 1280` RT-DETR tensor while retaining more boundary detail than the rejected 416/320 experiments.
 
+## Full-corpus evidence
+
+All 14 shards matched the pinned byte lengths and SHA-256 values. The converter processed all 6,750 pages and included 5,868 pages: 5,108 story-page positives with 40,383 pseudo-label boxes, plus 760 cover, advertisement, and text-story whole-page negatives. It excluded 875 ambiguous `first-page` pages and seven story pages with fewer than two valid boxes. The comic-grouped split contains 4,793 train pages and 1,075 validation pages.
+
+A deterministic 48-page overlay review sampled 36 positive and 12 negative pages from the full converted corpus. Positive boxes generally followed visible panel gutters; the sampled advertisements and text pages remained unboxed. This is a semantic suitability check, not an accuracy score, and does not replace human truth.
+
 Required order:
 
-1. Convert all 14 verified shards and train only on public data.
-2. Record public pseudo-label validation separately.
-3. Export ONNX and Core ML, then measure model-declared 640 input latency and memory.
-4. Run the unchanged private 60-panel/20-fallback scorer.
-5. Publish a model and update the App only if exact panels are at least 95%, adjacent-order error is below 2%, fallback is 100%, and memory materially improves.
+1. [x] Verify and convert all 14 public-data shards.
+2. [ ] Train the 640 model and record public pseudo-label validation separately.
+3. [ ] Export ONNX and Core ML, then measure model-declared 640 input latency and memory.
+4. [ ] Run the unchanged private 60-panel/20-fallback scorer.
+5. [ ] Publish a model update to the App only if exact panels are at least 95%, adjacent-order error is below 2%, fallback is 100%, and memory materially improves.
