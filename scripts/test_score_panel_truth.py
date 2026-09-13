@@ -1,6 +1,6 @@
 import unittest
 
-from scripts.score_panel_truth import maximum_match, ordered, postprocess
+from scripts.score_panel_truth import maximum_match, ordered, postprocess, score
 
 
 class PanelTruthScorerTests(unittest.TestCase):
@@ -15,7 +15,7 @@ class PanelTruthScorerTests(unittest.TestCase):
                 [[0.4, -0.01, 0.9, 0.19], [0, 0, 0.4, 0.36]],
                 "rightToLeft",
             )[0],
-            [0, 0, 0.4, 0.36],
+            [0.4, 0.0, 0.9, 0.19],
         )
 
         self.assertEqual(
@@ -26,6 +26,45 @@ class PanelTruthScorerTests(unittest.TestCase):
                 ]
             ),
             [],
+        )
+
+    def test_scores_panel_and_fallback_pages_separately(self):
+        truth = {
+            "readingDirection": "rightToLeft",
+            "pages": [
+                {
+                    "id": "panel",
+                    "file": "panel.jpg",
+                    "expectation": "panels",
+                    "regions": [
+                        {"order": 0, "box": [0.6, 0, 1, 1]},
+                        {"order": 1, "box": [0, 0, 0.4, 1]},
+                    ],
+                },
+                {
+                    "id": "fallback",
+                    "file": "fallback.jpg",
+                    "expectation": "fallback",
+                    "regions": [],
+                },
+            ],
+        }
+        audit = {
+            "pages": [
+                {
+                    "page": "panel.jpg",
+                    "detections": [
+                        {"score": 0.9, "box": [0.6, 0, 1, 1]},
+                        {"score": 0.9, "box": [0, 0, 0.4, 1]},
+                    ],
+                },
+                {"page": "fallback.jpg", "detections": []},
+            ]
+        }
+        result = score(truth, audit, minimum_score=0.85)
+        self.assertEqual(
+            (result["panelNoModificationRate"], result["fallbackAccuracy"], result["minimumScore"]),
+            (1.0, 1.0, 0.85),
         )
         self.assertEqual(
             postprocess(

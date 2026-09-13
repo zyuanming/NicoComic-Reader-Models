@@ -20,6 +20,24 @@ def ordered(boxes, direction):
         [max(0.0, box[0]), max(0.0, box[1]), min(1.0, box[2]), min(1.0, box[3])]
         for box in boxes
     ]
+
+    def split(rects, axis):
+        near, far = ((1, 3) if axis == "horizontal" else (0, 2))
+        rects = sorted(rects, key=lambda box: box[near])
+        for index in range(1, len(rects)):
+            if max(box[far] for box in rects[:index]) <= min(box[near] for box in rects[index:]):
+                return rects[:index], rects[index:]
+        return None
+
+    horizontal = split(boxes, "horizontal")
+    if horizontal:
+        return ordered(horizontal[0], direction) + ordered(horizontal[1], direction)
+    vertical = split(boxes, "vertical")
+    if vertical:
+        left = ordered(vertical[0], direction)
+        right = ordered(vertical[1], direction)
+        return left + right if direction == "leftToRight" else right + left
+
     rows = []
     for rect in sorted(boxes, key=lambda box: (box[1], box[0])):
         best = min(
@@ -52,13 +70,21 @@ def postprocess(
     maximum_overlap=0.50,
     direction="rightToLeft",
 ):
+    eligible = [
+        detection
+        for detection in detections
+        if detection["score"] >= minimum_score
+        and detection["box"][2] - detection["box"][0] >= minimum_dimension
+        and detection["box"][3] - detection["box"][1] >= minimum_dimension
+    ]
     accepted = []
-    for detection in sorted(detections, key=lambda item: item["score"], reverse=True):
+    for detection in sorted(eligible, key=lambda item: item["score"], reverse=True):
         box = detection["box"]
-        if (
-            detection["score"] < minimum_score
-            or box[2] - box[0] < minimum_dimension
-            or box[3] - box[1] < minimum_dimension
+        area = (box[2] - box[0]) * (box[3] - box[1])
+        if any(
+            (other["box"][2] - other["box"][0]) * (other["box"][3] - other["box"][1]) > area
+            and containment(box, other["box"]) >= 0.90
+            for other in eligible
         ):
             continue
         if any(containment(box, item) >= 0.90 for item in accepted):
@@ -117,7 +143,7 @@ def maximum_match(expected, detected):
     ]
 
 
-def score(truth, audit, iou_threshold=0.70):
+def score(truth, audit, iou_threshold=0.70, minimum_score=0.80):
     predictions = {page["page"]: page for page in audit["pages"]}
     results = []
     for page in truth["pages"]:
@@ -128,6 +154,7 @@ def score(truth, audit, iou_threshold=0.70):
         ]
         detected = postprocess(
             prediction["detections"],
+            minimum_score=minimum_score,
             direction=page.get("readingDirection", truth["readingDirection"]),
         )
         indices, matched_ious = maximum_match(expected, detected)
@@ -137,7 +164,8 @@ def score(truth, audit, iou_threshold=0.70):
             if first is not None and second is not None
         ]
         order_errors = sum(second != first + 1 for first, second in adjacent)
-        passed = (
+        expectation = page.get("expectation", "panels")
+        passed = not detected if expectation == "fallback" else (
             len(expected) == len(detected)
             and all(value >= iou_threshold for value in matched_ious)
             and indices == list(range(len(detected)))
@@ -146,6 +174,7 @@ def score(truth, audit, iou_threshold=0.70):
             {
                 "id": page["id"],
                 "file": page["file"],
+                "expectation": expectation,
                 "expectedCount": len(expected),
                 "detectedCount": len(detected),
                 "matchedIoU": matched_ious,
@@ -155,14 +184,25 @@ def score(truth, audit, iou_threshold=0.70):
                 "passed": passed,
             }
         )
+    panel_results = [result for result in results if result["expectation"] == "panels"]
+    fallback_results = [result for result in results if result["expectation"] == "fallback"]
     passed = sum(result["passed"] for result in results)
-    order_errors = sum(result["orderErrors"] for result in results)
-    order_relationships = sum(result["orderRelationships"] for result in results)
+    passed_panels = sum(result["passed"] for result in panel_results)
+    passed_fallback = sum(result["passed"] for result in fallback_results)
+    order_errors = sum(result["orderErrors"] for result in panel_results)
+    order_relationships = sum(result["orderRelationships"] for result in panel_results)
     return {
         "schemaVersion": 1,
+        "minimumScore": minimum_score,
         "pageCount": len(results),
         "passedPages": passed,
         "noModificationRate": passed / len(results) if results else 0.0,
+        "panelPages": len(panel_results),
+        "passedPanelPages": passed_panels,
+        "panelNoModificationRate": passed_panels / len(panel_results) if panel_results else 0.0,
+        "fallbackPages": len(fallback_results),
+        "passedFallbackPages": passed_fallback,
+        "fallbackAccuracy": passed_fallback / len(fallback_results) if fallback_results else 0.0,
         "orderErrors": order_errors,
         "orderRelationships": order_relationships,
         "orderErrorRate": order_errors / order_relationships if order_relationships else 0.0,
@@ -175,15 +215,25 @@ def main():
     parser.add_argument("truth", type=Path)
     parser.add_argument("audit", type=Path)
     parser.add_argument("output", type=Path)
+    parser.add_argument("--minimum-score", type=float, default=0.80)
     args = parser.parse_args()
-    result = score(json.loads(args.truth.read_text()), json.loads(args.audit.read_text()))
+    result = score(
+        json.loads(args.truth.read_text()),
+        json.loads(args.audit.read_text()),
+        minimum_score=args.minimum_score,
+    )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2) + "\n")
     print(
         json.dumps(
             {
                 key: result[key]
-                for key in ("pageCount", "passedPages", "noModificationRate", "orderErrorRate")
+                for key in (
+                    "pageCount",
+                    "panelNoModificationRate",
+                    "fallbackAccuracy",
+                    "orderErrorRate",
+                )
             },
             indent=2,
         )
