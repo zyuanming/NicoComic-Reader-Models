@@ -51,13 +51,30 @@ The converter accepts only the audited source ONNX SHA-256:
 fba50583bfaaba3eed33f3eac6ca37be09b8c4882bac05da93f96697010a45b1
 ```
 
-The release ZIP SHA-256 is recorded in [`checksums.txt`](checksums.txt).
+The release ZIP SHA-256 is recorded in [`checksums.txt`](checksums.txt). Input-size and simulator-memory experiments are recorded in [`reports/2026-09-14-input-memory-investigation.md`](reports/2026-09-14-input-memory-investigation.md).
 
 ### NicoComic integration evidence
 
 NicoComic offers this candidate as an optional download. An iPhone simulator completed public Release download, SHA-256 verification, extraction, and Core ML compilation in 27.052 seconds. Two local 60-page raw-corpus runs measured 513–521 ms median / 647–757 ms P95 on the Mac host. Two iPad simulator warm runs ranged from 1.037 to 1.228 seconds per page, so a one-second physical-device target is not claimed.
 
-An independently selected fixed-interval 20-page private holdout was manually reviewed after freezing the current thresholds. It scored 19/20 exact pages (95%); the remaining page contains one tall panel whose two raw detections score 0.684 and 0.352 and are therefore rejected. A separate 20-page human fallback set returned the whole page 20/20. These small private samples guide engineering and are not a general accuracy claim.
+The production App path now scores an independently reviewed private set at 57/60 exact pages (95%), 0.47% adjacent-order error, and 20/20 whole-page fallbacks. Three remaining failures stay in the per-page private report. These samples guide engineering; they are not a general accuracy claim.
+
+## Lightweight training baseline
+
+The current RT-DETR candidate meets the private quality floor but has a large simulator inference working set. The replacement experiment uses official Apache-2.0 YOLOX-Nano at `416 × 416` with one `panel` class. The first reproducible dataset is UMD's MIT-licensed COMICS manual panel archive: 501 public-domain pages, 2,980 valid boxes, and 58 pages without boxes. One all-zero sentinel annotation is ignored.
+
+```sh
+python3.11 -m venv .venv-training
+.venv-training/bin/pip install -r scripts/requirements-training.txt
+curl -fL -o panels_annotations.zip https://obj.umiacs.umd.edu/comics/panels_annotations.zip
+.venv-training/bin/python scripts/prepare_comics_coco.py panels_annotations.zip /tmp/nicocomic-comics-coco
+git clone https://github.com/Megvii-BaseDetection/YOLOX.git
+git -C YOLOX checkout 419778480ab6ec0590e5d3831b3afb3b46ab2aa3
+.venv-training/bin/pip install -e YOLOX --no-build-isolation --no-deps
+.venv-training/bin/python YOLOX/tools/train.py -f experiments/yolox_nano_panels.py -d 1 -b 8 --fp16 data_dir /tmp/nicocomic-comics-coco
+```
+
+The converter verifies the archive SHA-256 before writing a deterministic 392-page train and 109-page validation split. Public validation only brings up the pipeline; the private 60-panel/20-fallback gate remains the replacement decision. Executed smoke evidence is recorded in [`reports/2026-09-14-yolox-nano-baseline.md`](reports/2026-09-14-yolox-nano-baseline.md).
 
 ## Data and privacy
 
