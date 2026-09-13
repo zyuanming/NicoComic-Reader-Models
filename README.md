@@ -36,6 +36,10 @@ fba50583bfaaba3eed33f3eac6ca37be09b8c4882bac05da93f96697010a45b1
 
 The release ZIP SHA-256 is recorded in [`checksums.txt`](checksums.txt).
 
+### NicoComic integration evidence
+
+NicoComic now offers this candidate as an optional download. An iPhone simulator completed the public Release download, SHA-256 verification, extraction, Core ML compilation, and five-panel inference in 27.052 seconds. iPhone and iPad simulator correctness checks returned the expected five panels. Two iPad simulator warm runs ranged from 1.037 to 1.228 seconds per page, so the one-second physical-device target is not claimed.
+
 ## Data and privacy
 
 This repository contains no Manga109-s images, private comics, private annotations, or audit screenshots. Obtain Manga109-s only through its official application process and comply with its terms. Do not use this model to redistribute or sell reproductions or derivatives of Manga109-s manga images.
