@@ -76,6 +76,7 @@ git -C YOLOX checkout 419778480ab6ec0590e5d3831b3afb3b46ab2aa3
 .venv-training/bin/python scripts/export_yolox_onnx.py experiments/yolox_nano_panels.py /tmp/nicocomic-yolox-output/latest_ckpt.pth NicoComicPanelYOLOXNano416.onnx
 .venv-training/bin/pip install coremltools==9.0
 .venv-training/bin/python scripts/export_yolox_coreml.py experiments/yolox_nano_panels.py /tmp/nicocomic-yolox-output/latest_ckpt.pth NicoComicPanelYOLOXNano416.mlpackage
+.venv-training/bin/python scripts/evaluate_yolox_coco.py experiments/yolox_nano_panels.py /tmp/nicocomic-yolox-output/latest_ckpt.pth /tmp/nicocomic-comics-coco/annotations/instances_val2017.json /tmp/nicocomic-comics-coco/val2017 /tmp/nicocomic-yolox-validation.json
 ```
 
 The converter verifies the archive SHA-256 before writing a deterministic 392-page train and 109-page validation split. Public validation only brings up the pipeline; the private 60-panel/20-fallback gate remains the replacement decision. Executed smoke evidence is recorded in [`reports/2026-09-14-yolox-nano-baseline.md`](reports/2026-09-14-yolox-nano-baseline.md).
