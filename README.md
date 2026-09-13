@@ -6,7 +6,7 @@ Open model artifacts and reproducible conversion tools for NicoComic's on-device
 
 The first release converts [`tori29umai/rtdetrv4-x-manga109s`](https://huggingface.co/tori29umai/rtdetrv4-x-manga109s) from ONNX to an FP16 Core ML package. The source model and this converted artifact are distributed under Apache-2.0.
 
-This is a **candidate**, not a production quality claim. It passes two anonymized hard-page smoke cases and the local conversion gates. Independent 60-panel/20-fallback truth and physical iPhone/iPad measurements remain open.
+This is a **candidate**, not a production quality claim. It passes the local conversion gate and runs across a 60-page untouched-source audit. Independent 60-panel/20-fallback truth and physical iPhone/iPad measurements remain open.
 
 ### Contract
 
@@ -28,6 +28,14 @@ python3.11 -m venv .venv
 .venv/bin/python scripts/export_rtdetr_coreml.py model.onnx NicoComicPanelRTDETR.mlpackage
 ```
 
+Audit the compiled model against a local image directory without copying source images into this repository:
+
+```bash
+.venv/bin/python scripts/audit_coreml_corpus.py NicoComicPanelRTDETR.mlpackage /path/to/pages /tmp/nicocomic-panel-audit --limit 60
+```
+
+The audit writes per-page JSON, private overlay images, and a contact sheet to the requested output directory. These outputs are evidence for manual review; they are not ground truth or a quality score.
+
 The converter accepts only the audited source ONNX SHA-256:
 
 ```text
@@ -38,7 +46,7 @@ The release ZIP SHA-256 is recorded in [`checksums.txt`](checksums.txt).
 
 ### NicoComic integration evidence
 
-NicoComic now offers this candidate as an optional download. An iPhone simulator completed the public Release download, SHA-256 verification, extraction, Core ML compilation, and five-panel inference in 27.052 seconds. iPhone and iPad simulator correctness checks returned the expected five panels. Two iPad simulator warm runs ranged from 1.037 to 1.228 seconds per page, so the one-second physical-device target is not claimed.
+NicoComic now offers this candidate as an optional download. An iPhone simulator completed the public Release download, SHA-256 verification, extraction, and Core ML compilation in 27.052 seconds. The App inference regression now uses an untouched source page. Two local 60-page raw-corpus runs measured 513–521 ms median / 647–757 ms P95 on the Mac host; 14 pages returned zero or one region and the median was four regions. These are execution and review results, not accuracy scores. Two iPad simulator warm runs ranged from 1.037 to 1.228 seconds per page, so the one-second physical-device target is not claimed.
 
 ## Data and privacy
 

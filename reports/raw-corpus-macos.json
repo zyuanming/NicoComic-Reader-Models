@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "pageCount": 60,
+  "sourceImagesModified": false,
+  "minimumScore": 0.35,
+  "zeroOrOnePanelPages": 14,
+  "medianPanelCount": 4,
+  "timingRuns": [
+    {
+      "medianMilliseconds": 521.2274584991974,
+      "p95Milliseconds": 647.3257291501795
+    },
+    {
+      "medianMilliseconds": 512.5199585017981,
+      "p95Milliseconds": 756.8334399038575
+    }
+  ],
+  "accuracyScored": false,
+  "note": "Aggregate execution evidence only. Source pages, filenames, overlays, and private annotations are not published."
+}
