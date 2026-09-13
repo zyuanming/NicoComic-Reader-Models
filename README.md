@@ -14,8 +14,8 @@ This is a **candidate**, not a production quality claim. It passes the local con
 - Outputs: `labels [1,300]`, `boxes [1,300,4]`, `scores [1,300]`.
 - Labels: `0 body`, `1 text`, `2 frame`.
 - Boxes: `xyxy` coordinates in the resized 1280-square input.
-- Current frame threshold: `0.35`.
-- Post-process: keep higher-confidence boxes first and suppress a candidate when at least 90% of its area is contained by an accepted box.
+- Raw audit threshold: `0.35`; NicoComic accepts frames at `0.80`.
+- App post-process: require normalized width and height of at least `0.06`, suppress a candidate when at least 90% of its area is contained by an accepted box, and return the whole page when two accepted boxes overlap by more than 50% of the smaller box.
 - Compute units: use CPU-only until the documented heterogeneous-compute coordinate failure is resolved on real Apple devices.
 
 ### Reproduce
@@ -36,6 +36,15 @@ Audit the compiled model against a local image directory without copying source 
 
 The audit writes per-page JSON, private overlay images, and a contact sheet to the requested output directory. These outputs are evidence for manual review; they are not ground truth or a quality score.
 
+Score an audit report against a private ordered-rectangle truth file:
+
+```bash
+python3 scripts/score_panel_truth.py /path/to/truth.json /path/to/report.json /tmp/panel-score.json
+python3 -m unittest scripts/test_score_panel_truth.py
+```
+
+The scorer uses one-to-one maximum IoU matching at 0.70 and mirrors NicoComic deterministic right-to-left row ordering and safety fallback. It emits a result for every page and never copies source images.
+
 The converter accepts only the audited source ONNX SHA-256:
 
 ```text
@@ -46,7 +55,9 @@ The release ZIP SHA-256 is recorded in [`checksums.txt`](checksums.txt).
 
 ### NicoComic integration evidence
 
-NicoComic now offers this candidate as an optional download. An iPhone simulator completed the public Release download, SHA-256 verification, extraction, and Core ML compilation in 27.052 seconds. The App inference regression now uses an untouched source page. Two local 60-page raw-corpus runs measured 513–521 ms median / 647–757 ms P95 on the Mac host; 14 pages returned zero or one region and the median was four regions. These are execution and review results, not accuracy scores. Two iPad simulator warm runs ranged from 1.037 to 1.228 seconds per page, so the one-second physical-device target is not claimed.
+NicoComic offers this candidate as an optional download. An iPhone simulator completed public Release download, SHA-256 verification, extraction, and Core ML compilation in 27.052 seconds. Two local 60-page raw-corpus runs measured 513–521 ms median / 647–757 ms P95 on the Mac host. Two iPad simulator warm runs ranged from 1.037 to 1.228 seconds per page, so a one-second physical-device target is not claimed.
+
+An independently selected fixed-interval 20-page private holdout was manually reviewed after freezing the current thresholds. It scored 19/20 exact pages (95%); the remaining page contains one tall panel whose two raw detections score 0.684 and 0.352 and are therefore rejected. A separate 20-page human fallback set returned the whole page 20/20. These small private samples guide engineering and are not a general accuracy claim.
 
 ## Data and privacy
 
