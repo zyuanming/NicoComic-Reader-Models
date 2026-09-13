@@ -37,5 +37,5 @@ def load_yolox_runtime(experiment: Path, checkpoint: Path):
     exp = get_exp(str(experiment), None)
     model = replace_module(exp.get_model(), nn.SiLU, SiLU).eval()
     saved = torch.load(checkpoint, map_location="cpu", weights_only=False)
-    model.load_state_dict(saved["model"])
+    model.load_state_dict(saved.get("ema", saved["model"]))
     return exp, YOLOXRuntimeModel(model, exp.test_size).eval()

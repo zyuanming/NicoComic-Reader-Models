@@ -43,3 +43,7 @@ The first temporary benchmark accidentally enumerated YOLOX's intentionally infi
 The pinned YOLOX exporter calls the removed private API `torch.onnx._export` under PyTorch 2.7. `scripts/export_yolox_onnx.py` now uses the public `torch.onnx.export` API. A shared functional decoder avoids the in-place tensor update that Core ML Tools rejects.
 
 A one-epoch checkpoint exported successfully to a 3.5 MiB ONNX model and a 1.9 MiB FP16 Core ML package. Both expose fixed input `images [1,3,416,416]` and output `detections [1,3549,6]`. The functional decoder matched upstream YOLOX output with maximum difference below `1e-5`. A CPU-only Core ML smoke prediction took 55.81 ms cold and 9.92–13.13 ms warm on the current Mac. These numbers prove only the conversion and runtime contract; the one-epoch weights are not a quality candidate and are not published.
+
+## Resumable local trainer
+
+`scripts/train_yolox_panels.py` bounds every epoch to `len(loader)`, updates an EMA model, rejects non-finite loss, writes checkpoints atomically, and resumes model, EMA, optimizer, and epoch state. A CPU no-Mosaic smoke run completed epoch 1 in 96.22 seconds at loss 17.0675; resuming the same directory completed epoch 2 in 70.14 seconds at loss 15.4278. Both EMA ONNX and Core ML exports then passed. The full baseline keeps Mosaic for the first 90 epochs and disables it for the final 10.

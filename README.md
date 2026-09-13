@@ -72,10 +72,10 @@ curl -fL -o panels_annotations.zip https://obj.umiacs.umd.edu/comics/panels_anno
 git clone https://github.com/Megvii-BaseDetection/YOLOX.git
 git -C YOLOX checkout 419778480ab6ec0590e5d3831b3afb3b46ab2aa3
 .venv-training/bin/pip install -e YOLOX --no-build-isolation --no-deps
-.venv-training/bin/python YOLOX/tools/train.py -f experiments/yolox_nano_panels.py -d 1 -b 8 --fp16 data_dir /tmp/nicocomic-comics-coco
-.venv-training/bin/python scripts/export_yolox_onnx.py experiments/yolox_nano_panels.py YOLOX_outputs/yolox_nano_panels/best_ckpt.pth NicoComicPanelYOLOXNano416.onnx
+.venv-training/bin/python scripts/train_yolox_panels.py experiments/yolox_nano_panels.py /tmp/nicocomic-comics-coco /tmp/nicocomic-yolox-output --device cpu
+.venv-training/bin/python scripts/export_yolox_onnx.py experiments/yolox_nano_panels.py /tmp/nicocomic-yolox-output/latest_ckpt.pth NicoComicPanelYOLOXNano416.onnx
 .venv-training/bin/pip install coremltools==9.0
-.venv-training/bin/python scripts/export_yolox_coreml.py experiments/yolox_nano_panels.py YOLOX_outputs/yolox_nano_panels/best_ckpt.pth NicoComicPanelYOLOXNano416.mlpackage
+.venv-training/bin/python scripts/export_yolox_coreml.py experiments/yolox_nano_panels.py /tmp/nicocomic-yolox-output/latest_ckpt.pth NicoComicPanelYOLOXNano416.mlpackage
 ```
 
 The converter verifies the archive SHA-256 before writing a deterministic 392-page train and 109-page validation split. Public validation only brings up the pipeline; the private 60-panel/20-fallback gate remains the replacement decision. Executed smoke evidence is recorded in [`reports/2026-09-14-yolox-nano-baseline.md`](reports/2026-09-14-yolox-nano-baseline.md).
