@@ -128,7 +128,7 @@ def score(truth, audit, iou_threshold=0.70):
         ]
         detected = postprocess(
             prediction["detections"],
-            direction=truth["readingDirection"],
+            direction=page.get("readingDirection", truth["readingDirection"]),
         )
         indices, matched_ious = maximum_match(expected, detected)
         adjacent = [

@@ -45,6 +45,12 @@ python3 -m unittest scripts/test_score_panel_truth.py
 
 The scorer uses one-to-one maximum IoU matching at 0.70 and mirrors NicoComic deterministic right-to-left row ordering and safety fallback. It emits a result for every page and never copies source images.
 
+Build the private 60-panel/20-fallback audit set locally from NicoComic's manifest and `.nicoreading` annotations. The command verifies each comic hash and writes anonymous page IDs; keep the output outside this repository.
+
+```bash
+python3 scripts/prepare_private_panel_audit.py /path/to/ReaderEngine/manifest.json /tmp/nicocomic-private-panel-audit
+```
+
 The converter accepts only the audited source ONNX SHA-256:
 
 ```text
