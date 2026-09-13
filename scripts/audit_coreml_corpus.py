@@ -12,7 +12,6 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 RTDETR_INPUT_EDGE = 1280
-YOLOX_INPUT_EDGE = 416
 PANEL_LABEL = 2
 
 
@@ -81,11 +80,11 @@ def postprocess_yolox(prediction, minimum_score, content_size, nms_threshold=0.4
     return accepted
 
 
-def prepare_image(source, architecture):
+def prepare_image(source, architecture, input_edge):
     if architecture == "yolox":
-        ratio = min(YOLOX_INPUT_EDGE / source.width, YOLOX_INPUT_EDGE / source.height)
+        ratio = min(input_edge / source.width, input_edge / source.height)
         size = (int(source.width * ratio), int(source.height * ratio))
-        canvas = Image.new("RGB", (YOLOX_INPUT_EDGE, YOLOX_INPUT_EDGE), (114, 114, 114))
+        canvas = Image.new("RGB", (input_edge, input_edge), (114, 114, 114))
         canvas.paste(source.resize(size, Image.Resampling.BILINEAR), (0, 0))
         return canvas, size
     return source.resize((RTDETR_INPUT_EDGE, RTDETR_INPUT_EDGE), Image.Resampling.BILINEAR), None
@@ -143,6 +142,11 @@ def main():
     output_names = {item.name for item in specification.description.output}
     architecture = "yolox" if "detections" in output_names else "rtdetr"
     input_name = specification.description.input[0].name
+    input_edge = (
+        specification.description.input[0].type.imageType.width
+        if architecture == "yolox"
+        else RTDETR_INPUT_EDGE
+    )
     minimum_score = args.minimum_score if args.minimum_score is not None else (0.01 if architecture == "yolox" else 0.35)
 
     timings = []
@@ -151,7 +155,7 @@ def main():
     for path in paths:
         with Image.open(path) as opened:
             source = opened.convert("RGB")
-        prepared, content_size = prepare_image(source, architecture)
+        prepared, content_size = prepare_image(source, architecture, input_edge)
         started = time.perf_counter()
         prediction = model.predict({input_name: prepared})
         detections = (
@@ -176,6 +180,7 @@ def main():
         "schemaVersion": 1,
         "model": args.model.name,
         "architecture": architecture,
+        "inputEdge": input_edge,
         "minimumScore": minimum_score,
         "pageCount": len(results),
         "zeroOrOnePanelPages": sum(count <= 1 for count in counts),
