@@ -86,29 +86,33 @@ def iou(first, second):
 
 
 def maximum_match(expected, detected):
-    if not expected or not detected:
+    if not expected:
         return [], []
+    if not detected:
+        return [None] * len(expected), [0.0] * len(expected)
 
     @lru_cache(maxsize=None)
     def solve(expected_index, used_mask):
         if expected_index == len(expected):
-            return 0.0, ()
-        best = (-1.0, ())
+            return 0.0, 0, ()
+        skipped_score, skipped_count, skipped_suffix = solve(expected_index + 1, used_mask)
+        best = (skipped_score, skipped_count, (None,) + skipped_suffix)
         for detected_index in range(len(detected)):
             if used_mask & (1 << detected_index):
                 continue
-            score, suffix = solve(expected_index + 1, used_mask | (1 << detected_index))
+            score, count, suffix = solve(expected_index + 1, used_mask | (1 << detected_index))
             candidate = (
                 iou(expected[expected_index], detected[detected_index]) + score,
+                count + 1,
                 (detected_index,) + suffix,
             )
-            if candidate[0] > best[0]:
+            if candidate[:2] > best[:2]:
                 best = candidate
         return best
 
-    _, indices = solve(0, 0)
+    _, _, indices = solve(0, 0)
     return list(indices), [
-        iou(expected[index], detected[detected_index])
+        iou(expected[index], detected[detected_index]) if detected_index is not None else 0.0
         for index, detected_index in enumerate(indices)
     ]
 
@@ -127,6 +131,12 @@ def score(truth, audit, iou_threshold=0.70):
             direction=truth["readingDirection"],
         )
         indices, matched_ious = maximum_match(expected, detected)
+        adjacent = [
+            (first, second)
+            for first, second in zip(indices, indices[1:])
+            if first is not None and second is not None
+        ]
+        order_errors = sum(second != first + 1 for first, second in adjacent)
         passed = (
             len(expected) == len(detected)
             and all(value >= iou_threshold for value in matched_ious)
@@ -140,15 +150,22 @@ def score(truth, audit, iou_threshold=0.70):
                 "detectedCount": len(detected),
                 "matchedIoU": matched_ious,
                 "matchedIndices": indices,
+                "orderErrors": order_errors,
+                "orderRelationships": len(adjacent),
                 "passed": passed,
             }
         )
     passed = sum(result["passed"] for result in results)
+    order_errors = sum(result["orderErrors"] for result in results)
+    order_relationships = sum(result["orderRelationships"] for result in results)
     return {
         "schemaVersion": 1,
         "pageCount": len(results),
         "passedPages": passed,
         "noModificationRate": passed / len(results) if results else 0.0,
+        "orderErrors": order_errors,
+        "orderRelationships": order_relationships,
+        "orderErrorRate": order_errors / order_relationships if order_relationships else 0.0,
         "pages": results,
     }
 
@@ -162,7 +179,15 @@ def main():
     result = score(json.loads(args.truth.read_text()), json.loads(args.audit.read_text()))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2) + "\n")
-    print(json.dumps({key: result[key] for key in ("pageCount", "passedPages", "noModificationRate")}, indent=2))
+    print(
+        json.dumps(
+            {
+                key: result[key]
+                for key in ("pageCount", "passedPages", "noModificationRate", "orderErrorRate")
+            },
+            indent=2,
+        )
+    )
 
 
 if __name__ == "__main__":

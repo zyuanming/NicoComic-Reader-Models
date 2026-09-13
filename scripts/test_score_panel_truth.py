@@ -9,6 +9,7 @@ class PanelTruthScorerTests(unittest.TestCase):
         indices, values = maximum_match(expected, list(reversed(expected)))
         self.assertEqual(indices, [1, 0])
         self.assertEqual(values, [1, 1])
+        self.assertEqual(maximum_match(expected, [expected[1]])[0], [None, 0])
         self.assertEqual(
             ordered(
                 [[0.4, -0.01, 0.9, 0.19], [0, 0, 0.4, 0.36]],
