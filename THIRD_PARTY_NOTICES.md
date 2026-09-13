@@ -1,5 +1,11 @@
 # Third-party notices
 
+## Comic Books Tiny Dataset v0 - Pages
+
+Source: <https://huggingface.co/datasets/emanuelevivoli/comix_v0_tiny_pages>
+
+Dataset card license: CC0-1.0. The dataset card identifies the source pages as public-domain comics from Digital Comic Museum. NicoComic-Reader-Models does not redistribute the page images; the checked-in manifest records provenance and hashes, and the conversion script reads separately downloaded shards. Faster R-CNN panel detections are treated as pseudo labels for training, never as quality truth.
+
 ## RT-DETRv4-X Manga109-s
 
 Source: <https://huggingface.co/tori29umai/rtdetrv4-x-manga109s>

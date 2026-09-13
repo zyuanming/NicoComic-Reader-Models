@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "dataset": "emanuelevivoli/comix_v0_tiny_pages",
+  "repositoryRevision": "5347bee7a327ea794a281af68107c386596242c4",
+  "sourceURL": "https://huggingface.co/datasets/emanuelevivoli/comix_v0_tiny_pages",
+  "downloadBaseURL": "https://huggingface.co/datasets/emanuelevivoli/comix_v0_tiny_pages/resolve/5347bee7a327ea794a281af68107c386596242c4",
+  "license": "CC0-1.0",
+  "pageCount": 6750,
+  "annotationSource": "detections.fasterrcnn.panels",
+  "annotationKind": "pseudo-label",
+  "shards": [
+    {"file": "comix-pages-train-0000.tar", "bytes": 222638080, "sha256": "3c39768e98e35929ce907762b8f76d5d164aa239c1c03c1c5ff4c49d66a7fc22"},
+    {"file": "comix-pages-train-0001.tar", "bytes": 153620480, "sha256": "a015f7bd9c14e079c2dba91fb4029a3e4abef17260ef0571c6b243c3ef4a5571"},
+    {"file": "comix-pages-train-0002.tar", "bytes": 176220160, "sha256": "bbbba47df77b604b4133b500d8c8d85acea33c6a1a5291a02fe055c640e4e992"},
+    {"file": "comix-pages-train-0003.tar", "bytes": 177264640, "sha256": "b2bdc51e33bd40261352504899100f8393902a819b8002085d17b8d6b81fbd3d"},
+    {"file": "comix-pages-train-0004.tar", "bytes": 163471360, "sha256": "6eb65b4bf55de1c232edcffd97357622438442870e0e2f8019562e2699ac3e06"},
+    {"file": "comix-pages-train-0005.tar", "bytes": 162703360, "sha256": "2c8ddeba80e64df4b5f89574ed0df85a70362d1585d83e531097804868e30163"},
+    {"file": "comix-pages-train-0006.tar", "bytes": 146411520, "sha256": "0e27b232d3c92b6d5a15fd6e5b038213a052e8899a04c3ba2178b02b53c580e5"},
+    {"file": "comix-pages-train-0007.tar", "bytes": 163471360, "sha256": "73a5c980f4eccdcf46add72e59ec26e9b369b382eaf85fe531f82f16523fee40"},
+    {"file": "comix-pages-train-0008.tar", "bytes": 152033280, "sha256": "0a142a5dd0ea62c0ee68efffd40e1f5ab63ceac6e53eff4fa53d8916265411f6"},
+    {"file": "comix-pages-train-0009.tar", "bytes": 146708480, "sha256": "a71494d2529d3c456751a2a6a8a1e9f059b372f3cd9b39ba2af81ef790bad196"},
+    {"file": "comix-pages-train-0010.tar", "bytes": 144066560, "sha256": "00066c859ca5a0ae89a1e15c797b733fa539d7ff7837373a61b7dc831852fd7a"},
+    {"file": "comix-pages-train-0011.tar", "bytes": 153231360, "sha256": "5ebb83c2ad96793fec8f9461afb4be4a1487c90a0fc37ec66bca9d5a2ac4c826"},
+    {"file": "comix-pages-train-0012.tar", "bytes": 165570560, "sha256": "c8f9ec1fc5ff47e3b847f98776baedca08239f5b71538dffd79b3173592cd113"},
+    {"file": "comix-pages-train-0013.tar", "bytes": 101795840, "sha256": "151d034be218df23f272292d43f99102ed0e9b86ef89d9aac4344671cf79ca8f"}
+  ]
+}
