@@ -1,0 +1,16 @@
+[
+  {
+    "page": "015.jpg",
+    "onnxCount": 5,
+    "coreMLCount": 5,
+    "minimumMatchedIoU": 0.9915586018042615,
+    "warmP95Milliseconds": 463.9441750070546
+  },
+  {
+    "page": "040.jpg",
+    "onnxCount": 5,
+    "coreMLCount": 5,
+    "minimumMatchedIoU": 0.9958027565394943,
+    "warmP95Milliseconds": 460.1027160038939
+  }
+]
