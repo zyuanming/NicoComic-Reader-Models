@@ -1,6 +1,7 @@
 loguru==0.7.3
 ninja==1.13.2
 numpy==2.4.6
+onnx==1.19.0
 opencv-python==5.0.0.93
 Pillow==12.3.0
 pycocotools==2.0.11

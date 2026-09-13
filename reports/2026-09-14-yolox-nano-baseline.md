@@ -37,3 +37,9 @@ These checks prove the data and model contracts connect; they do not prove panel
 A bounded one-epoch MPS run without dynamic Mosaic completed 49 batches at batch size 8 in 219.88 seconds with total loss 17.0731. The process used about 1 GiB resident memory. A linear 100-epoch run would take at least 6.1 hours before validation and export, so local MPS is retained as a smoke path rather than the production training route. The public Colab notebook uses the official CUDA trainer and preserves checkpoints.
 
 The first temporary benchmark accidentally enumerated YOLOX's intentionally infinite sampler. The figure above comes from a corrected run bounded to `len(loader)` batches; no timing from the invalid run is used.
+
+## Export contract smoke
+
+The pinned YOLOX exporter calls the removed private API `torch.onnx._export` under PyTorch 2.7. `scripts/export_yolox_onnx.py` now uses the public `torch.onnx.export` API. A shared functional decoder avoids the in-place tensor update that Core ML Tools rejects.
+
+A one-epoch checkpoint exported successfully to a 3.5 MiB ONNX model and a 1.9 MiB FP16 Core ML package. Both expose fixed input `images [1,3,416,416]` and output `detections [1,3549,6]`. The functional decoder matched upstream YOLOX output with maximum difference below `1e-5`. A CPU-only Core ML smoke prediction took 55.81 ms cold and 9.92–13.13 ms warm on the current Mac. These numbers prove only the conversion and runtime contract; the one-epoch weights are not a quality candidate and are not published.
