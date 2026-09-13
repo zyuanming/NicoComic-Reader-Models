@@ -87,6 +87,8 @@ git -C YOLOX checkout 419778480ab6ec0590e5d3831b3afb3b46ab2aa3
 
 The converter verifies the archive SHA-256 before writing a deterministic 392-page train and 109-page validation split. Public validation only brings up the pipeline; the private 60-panel/20-fallback gate remains the replacement decision. Executed smoke evidence is recorded in [`reports/2026-09-14-yolox-nano-baseline.md`](reports/2026-09-14-yolox-nano-baseline.md).
 
+The completed 416/320 training, Core ML timing, public-only distillation, and private replacement decision are recorded in [`reports/2026-09-14-yolox-nano-quality-gate.md`](reports/2026-09-14-yolox-nano-quality-gate.md). Both small inputs missed the private panel gate, so no lightweight weight is released and NicoComic keeps its current model descriptor.
+
 For a free GPU run, open [`notebooks/train_yolox_nano_panels_colab.ipynb`](notebooks/train_yolox_nano_panels_colab.ipynb) in Google Colab and select a GPU runtime. The notebook downloads only the public archive, trains with the pinned official YOLOX source, and exports an ONNX checkpoint for Core ML conversion and private quality scoring.
 
 ## Data and privacy
