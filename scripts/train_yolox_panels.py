@@ -5,6 +5,7 @@ import argparse
 import json
 import os
 import random
+import shutil
 import time
 from pathlib import Path
 
@@ -105,6 +106,11 @@ def main() -> None:
             temporary,
         )
         os.replace(temporary, checkpoint)
+        if (epoch + 1) % exp.eval_interval == 0 or epoch + 1 == epochs:
+            candidate = args.output_dir / f"epoch_{epoch + 1:03d}_ckpt.pth"
+            candidate_temporary = candidate.with_suffix(".tmp")
+            shutil.copy2(checkpoint, candidate_temporary)
+            os.replace(candidate_temporary, candidate)
 
 
 if __name__ == "__main__":
