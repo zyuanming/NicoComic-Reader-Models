@@ -31,3 +31,9 @@ The split is derived from the first byte of each filename stem's SHA-256, so ano
 ## Gate
 
 These checks prove the data and model contracts connect; they do not prove panel quality. Full training, Core ML conversion, public-validation metrics, private 60-panel/20-fallback scoring, and simulator memory comparison remain required before an App candidate exists.
+
+## Local Apple Silicon limit
+
+A bounded one-epoch MPS run without dynamic Mosaic completed 49 batches at batch size 8 in 219.88 seconds with total loss 17.0731. The process used about 1 GiB resident memory. A linear 100-epoch run would take at least 6.1 hours before validation and export, so local MPS is retained as a smoke path rather than the production training route. The public Colab notebook uses the official CUDA trainer and preserves checkpoints.
+
+The first temporary benchmark accidentally enumerated YOLOX's intentionally infinite sampler. The figure above comes from a corrected run bounded to `len(loader)` batches; no timing from the invalid run is used.
