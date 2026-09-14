@@ -91,19 +91,19 @@ The completed 416/320 training, Core ML timing, public-only distillation, and pr
 
 For a free GPU run, open [`notebooks/train_yolox_nano_panels_colab.ipynb`](notebooks/train_yolox_nano_panels_colab.ipynb) in Google Colab and select a GPU runtime. The notebook downloads only the public archive, trains with the pinned official YOLOX source, and exports an ONNX checkpoint for Core ML conversion and private quality scoring.
 
-### CC0 Comix v0 input for the 640 experiment
+### CC0 Comix v0 input for the 512 experiment
 
 The next experiment expands the public training input with `emanuelevivoli/comix_v0_tiny_pages`: 6,750 CC0-1.0 pages at fixed revision `5347bee7a327ea794a281af68107c386596242c4`. Its Faster R-CNN panel boxes are pseudo labels, so they are training input only; the private 60-panel/20-fallback set remains the release gate.
 
 ```sh
 .venv-training/bin/python scripts/download_comix_v0.py datasets/comix_v0_tiny_pages.json /tmp/nicocomic-comix-v0
 .venv-training/bin/python scripts/prepare_comix_v0_coco.py datasets/comix_v0_tiny_pages.json /tmp/nicocomic-comix-v0-coco /tmp/nicocomic-comix-v0/*.tar
-.venv-training/bin/python scripts/train_yolox_panels.py experiments/yolox_nano_panels_640.py /tmp/nicocomic-comix-v0-coco /tmp/nicocomic-yolox-640 --device cuda
+.venv-training/bin/python scripts/train_yolox_panels.py experiments/yolox_nano_panels_512.py /tmp/nicocomic-comix-v0-coco /tmp/nicocomic-yolox-512 --device cuda
 ```
 
 The downloader and converter use Python's standard library plus Pillow already required by training. They verify every shard against the checked-in byte length and SHA-256, exclude the ambiguous `first-page` class, use story boxes as positives, retain cover/advertisement/text-story pages as whole-page negatives, and split by comic rather than page to prevent book leakage. The provenance and first-shard audit are in [`reports/2026-09-14-comix-v0-data-audit.md`](reports/2026-09-14-comix-v0-data-audit.md).
 
-For the full free-GPU run, open [`notebooks/train_yolox_nano_comix_640_colab.ipynb`](notebooks/train_yolox_nano_comix_640_colab.ipynb). It downloads all verified shards, converts them, trains the fixed 640 model, retains checkpoints at the experiment evaluation interval for later private-gate selection, reports public pseudo-label validation, and exports ONNX without accessing private data.
+For the full free-GPU run, open [`notebooks/train_yolox_nano_comix_512_colab.ipynb`](notebooks/train_yolox_nano_comix_512_colab.ipynb). It downloads all verified shards, converts them, trains the fixed 512 model, retains checkpoints at the experiment evaluation interval for later private-gate selection, reports public pseudo-label validation, and exports ONNX without accessing private data. Keep 640 as the single fallback size if 512 misses the unchanged private quality gate.
 
 ## Data and privacy
 

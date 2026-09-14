@@ -2,7 +2,7 @@
 
 ## Decision
 
-Use `emanuelevivoli/comix_v0_tiny_pages` as additional training input for the next native `640 × 640` YOLOX-Nano experiment. Do not use its generated detections as validation truth, and do not change the NicoComic download descriptor until the existing private 60-panel/20-fallback gate passes.
+Use `emanuelevivoli/comix_v0_tiny_pages` as additional training input for the next native `512 × 512` YOLOX-Nano experiment. Do not use its generated detections as validation truth, and do not change the NicoComic download descriptor until the existing private 60-panel/20-fallback gate passes.
 
 ## Provenance
 
@@ -32,7 +32,7 @@ The generated COCO subset contains 449 pages and 2,542 boxes. It splits by `book
 
 ## Training contract
 
-The next experiment uses the existing Apache-2.0 YOLOX-Nano code with a fixed `640 × 640` inference tensor. Source pages are decoded once, aspect fitted, and their normalized boxes map back to the original page. This makes model compute materially smaller than the current fixed `1280 × 1280` RT-DETR tensor while retaining more boundary detail than the rejected 416/320 experiments.
+The next experiment uses the existing Apache-2.0 YOLOX-Nano code with a fixed `512 × 512` inference tensor. Source pages are decoded once, aspect fitted, and their normalized boxes map back to the original page. This makes model compute materially smaller than the current fixed `1280 × 1280` RT-DETR tensor while retaining more boundary detail than the rejected 416/320 experiments.
 
 ## Full-corpus evidence
 
@@ -47,16 +47,17 @@ Untrained YOLOX-Nano packages isolate the cost of the fixed input shape without 
 | Input | Median | P95 | Process maximum RSS | Package |
 |---|---:|---:|---:|---:|
 | 416 × 416 | 9.82 ms | 10.25 ms | 41,713,664 bytes | 1.9 MiB |
+| 512 × 512 | 13.62 ms | 17.35 ms | 43,761,664 bytes | 1.9 MiB |
 | 640 × 640 | 21.45 ms | 23.11 ms | 48,955,392 bytes | 1.9 MiB |
 
-The 640 tensor costs 2.18 times the median latency of 416 while remaining a small, tens-of-milliseconds architecture on this host. Across all 40,383 training boxes, the scaled panel short-side first percentile is 89 px at 640, versus 71 px at 512 and 58 px at 416. This measures annotated panel geometry, not gutter-line thickness; 640 is the next quality/speed compromise to train, not proof that a smaller input cannot work.
+The 512 tensor is 36% faster at the median than 640 in the same release-Swift CPU-only architecture probe. Across all 40,383 training boxes, the scaled panel short-side first percentile remains 71 px at 512, versus 89 px at 640 and 58 px at 416. This makes 512 the first training target; 640 remains the one fallback if the unchanged private quality gate shows lost thin boundaries.
 
 Reproduce latency with `xcrun swiftc -O scripts/benchmark_coreml_architecture.swift -o /tmp/nicocomic-coreml-benchmark`, then run the executable under `/usr/bin/time -l` to record process maximum RSS. These architecture measurements do not replace the private 60/20 quality gate or iPhone/iPad simulator memory evidence.
 
 Required order:
 
 1. [x] Verify and convert all 14 public-data shards.
-2. [ ] Train the 640 model and record public pseudo-label validation separately.
-3. [ ] Export ONNX and Core ML, then measure model-declared 640 input latency and memory.
+2. [ ] Train the 512 model and record public pseudo-label validation separately.
+3. [ ] Export ONNX and Core ML, then measure model-declared 512 input latency and memory.
 4. [ ] Run the unchanged private 60-panel/20-fallback scorer.
 5. [ ] Publish a model update to the App only if exact panels are at least 95%, adjacent-order error is below 2%, fallback is 100%, and memory materially improves.
