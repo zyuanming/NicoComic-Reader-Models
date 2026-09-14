@@ -1,5 +1,14 @@
 # Third-party notices
 
+## Real-CUGAN 2× no-denoise
+
+Source: <https://github.com/bilibili/ailab/tree/2799af78ef105b414cc4b796c67c8511acdcdf6f/Real-CUGAN>
+
+The official `UpCunet2x` implementation and `up2x-latest-no-denoise.pth`
+weight are distributed under the MIT License. The Core ML package is a format
+conversion of that implementation and weight. The complete license is in
+`LICENSES/Real-CUGAN-MIT.txt` and ships with the model archive.
+
 ## Real-ESRGAN Anime 6B
 
 Source: <https://github.com/xinntao/Real-ESRGAN/tree/f83472d0113b8af82b5c5dcaa6e5a9dc88e466a7>

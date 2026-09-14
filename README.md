@@ -10,6 +10,46 @@ Git history. Publish them as GitHub release assets and enable the checked-in
 git config core.hooksPath .githooks
 ```
 
+## Real-CUGAN 2× no-denoise Core ML
+
+The 2× release converts the official MIT `up2x-latest-no-denoise.pth`
+weight with the pinned `UpCunet2x` implementation. The converter replaces
+PyTorch's negative-padding crop notation with equivalent tensor slices because
+coremltools rejects negative padding, then verifies the rewritten graph against
+the official forward path before checking Core ML parity.
+
+### Contract
+
+- Input: `input`, FP32 multi-array `[1, 3, 256, 256]` in RGB order.
+- Output: `output`, FP32 multi-array `[1, 3, 512, 512]`.
+- Scale: 2×.
+- Official source commit: `2799af78ef105b414cc4b796c67c8511acdcdf6f`.
+- Source SHA-256: `ef6c4e433bcac37b75ffba0a4044987ddd3ecfe7765a74a3c93887954e45562b`.
+- Source-weight SHA-256: `f491f9ecf6964ead9f3a36bf03e83527f32c6a341b683f7378ac6c1e2a5f0d16`.
+
+### Reproduce
+
+```sh
+python3.11 -m venv .venv
+.venv/bin/pip install -r scripts/requirements.txt
+mkdir -p .weights .release
+curl -fL -o .weights/upcunet_v3.py \
+  https://raw.githubusercontent.com/bilibili/ailab/2799af78ef105b414cc4b796c67c8511acdcdf6f/Real-CUGAN/upcunet_v3.py
+curl -fL -o .weights/realcugan-updated_weights.zip \
+  https://github.com/bilibili/ailab/releases/download/Real-CUGAN/updated_weights.zip
+unzip -oj .weights/realcugan-updated_weights.zip \
+  updated_weights/up2x-latest-no-denoise.pth -d .weights
+.venv/bin/python scripts/export_realcugan_coreml.py \
+  .weights/upcunet_v3.py \
+  .weights/up2x-latest-no-denoise.pth \
+  .release/NicoComicRealCUGAN2xNoDenoise-v0.1.0.mlpackage
+```
+
+The published FP32 conversion measured mean absolute error below `0.000001`
+and maximum absolute error `0.000004`. FP16 was rejected because its mean and
+maximum errors were `0.002985` and `0.026500`. The release ZIP digest is
+recorded in [`checksums.txt`](checksums.txt).
+
 ## Real-ESRGAN Anime 4× Core ML
 
 The super-resolution release converts the official BSD-3-Clause
