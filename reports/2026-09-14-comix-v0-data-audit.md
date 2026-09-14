@@ -40,6 +40,19 @@ All 14 shards matched the pinned byte lengths and SHA-256 values. The converter 
 
 A deterministic 48-page overlay review sampled 36 positive and 12 negative pages from the full converted corpus. Positive boxes generally followed visible panel gutters; the sampled advertisements and text pages remained unboxed. This is a semantic suitability check, not an accuracy score, and does not replace human truth.
 
+## Fixed-input architecture benchmark
+
+Untrained YOLOX-Nano packages isolate the cost of the fixed input shape without claiming detection quality. Both packages use the same 896,754-parameter architecture and FP16 Core ML conversion. A release-built Swift process ran one warm-up and 80 CPU-only predictions against each package on the same Mac and input page:
+
+| Input | Median | P95 | Process maximum RSS | Package |
+|---|---:|---:|---:|---:|
+| 416 × 416 | 9.82 ms | 10.25 ms | 41,713,664 bytes | 1.9 MiB |
+| 640 × 640 | 21.45 ms | 23.11 ms | 48,955,392 bytes | 1.9 MiB |
+
+The 640 tensor costs 2.18 times the median latency of 416 while remaining a small, tens-of-milliseconds architecture on this host. Across all 40,383 training boxes, the scaled panel short-side first percentile is 89 px at 640, versus 71 px at 512 and 58 px at 416. This measures annotated panel geometry, not gutter-line thickness; 640 is the next quality/speed compromise to train, not proof that a smaller input cannot work.
+
+Reproduce latency with `xcrun swiftc -O scripts/benchmark_coreml_architecture.swift -o /tmp/nicocomic-coreml-benchmark`, then run the executable under `/usr/bin/time -l` to record process maximum RSS. These architecture measurements do not replace the private 60/20 quality gate or iPhone/iPad simulator memory evidence.
+
 Required order:
 
 1. [x] Verify and convert all 14 public-data shards.

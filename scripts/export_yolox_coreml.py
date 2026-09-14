@@ -41,7 +41,7 @@ def main() -> None:
         minimum_deployment_target=ct.target.iOS18,
     )
     converted.author = "NicoComic"
-    converted.short_description = "YOLOX-Nano 416 comic panel detector."
+    converted.short_description = f"YOLOX-Nano {exp.test_size[0]} comic panel detector."
     converted.version = "0.1.0"
     converted.user_defined_metadata["architecture"] = "YOLOX-Nano"
     converted.user_defined_metadata["input_edge"] = str(exp.test_size[0])
