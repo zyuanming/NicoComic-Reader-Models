@@ -1,0 +1,16 @@
+#!/bin/bash
+
+limit=$((1 * 1024 * 1024))
+failed=0
+
+while IFS= read -r -d '' path; do
+    object=$(git rev-parse ":$path" 2>/dev/null) || continue
+    size=$(git cat-file -s "$object") || continue
+
+    if (( size > limit )); then
+        printf 'Refusing to commit %s (%d bytes): Git files must be 1 MiB or smaller.\n' "$path" "$size" >&2
+        failed=1
+    fi
+done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+
+exit "$failed"

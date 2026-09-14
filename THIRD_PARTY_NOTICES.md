@@ -1,5 +1,23 @@
 # Third-party notices
 
+## Real-ESRGAN Anime 6B
+
+Source: <https://github.com/xinntao/Real-ESRGAN/tree/f83472d0113b8af82b5c5dcaa6e5a9dc88e466a7>
+
+The source code and official `RealESRGAN_x4plus_anime_6B.pth` weights are
+distributed under the BSD 3-Clause License. The Core ML package is a format
+conversion of those weights and retains that notice. The complete license is
+in `LICENSES/Real-ESRGAN-BSD-3-Clause.txt` and ships with the model archive.
+
+## BasicSR RRDB architecture
+
+Source: <https://github.com/XPixelGroup/BasicSR/tree/8d56e3a045f9fb3e1d8872f92ee4a4f07f886b0a>
+
+The inference graph in `scripts/export_realesrgan_anime_coreml.py` reproduces
+the RRDB architecture from BasicSR, distributed under Apache License 2.0. The
+complete license is in `LICENSES/BasicSR-Apache-2.0.txt` and ships with the
+model archive.
+
 ## Comic Books Tiny Dataset v0 - Pages
 
 Source: <https://huggingface.co/datasets/emanuelevivoli/comix_v0_tiny_pages>

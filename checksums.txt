@@ -1,1 +1,2 @@
 6008060e0f6b7775e7c51ffb38b390d723c146e9bd4cced9337748389f3673f3  NicoComicPanelRTDETR-v0.1.0-candidate.mlpackage.zip
+cf32d76b7e115ce46694292a3258f956196d8b86964df875097cdb6509f9b9a9  NicoComicRealESRGANAnime4x-v0.1.0.zip

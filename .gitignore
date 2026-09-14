@@ -5,3 +5,5 @@
 *.mlmodelc
 *.onnx
 __pycache__/
+.weights/
+*.pth

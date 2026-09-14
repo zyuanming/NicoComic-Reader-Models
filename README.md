@@ -2,6 +2,53 @@
 
 Open model artifacts and reproducible conversion tools for NicoComic's on-device adaptive comic reader.
 
+Model binaries, source weights, datasets, and generated packages stay out of
+Git history. Publish them as GitHub release assets and enable the checked-in
+1 MiB commit guard after cloning:
+
+```sh
+git config core.hooksPath .githooks
+```
+
+## Real-ESRGAN Anime 4× Core ML
+
+The super-resolution release converts the official BSD-3-Clause
+`RealESRGAN_x4plus_anime_6B.pth` weights into a fixed-input FP16 Core ML
+package. The RRDB inference graph follows BasicSR's Apache-2.0 architecture.
+
+### Contract
+
+- Input: `input`, FP16 multi-array `[1, 3, 512, 512]` in RGB order.
+- Output: `output`, FP16 multi-array `[1, 3, 2048, 2048]`.
+- Scale: 4×.
+- Source-weight SHA-256: `f872d837d3c90ed2e05227bed711af5671a6fd1c9f7d7e91c911a61f155e99da`.
+
+### Reproduce
+
+```sh
+python3.11 -m venv .venv
+.venv/bin/pip install -r scripts/requirements.txt
+mkdir -p .weights .release
+curl -fL -o .weights/RealESRGAN_x4plus_anime_6B.pth \
+  https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth
+.venv/bin/python scripts/export_realesrgan_anime_coreml.py \
+  .weights/RealESRGAN_x4plus_anime_6B.pth \
+  .release/NicoComicRealESRGANAnime4x-v0.1.0.mlpackage
+mkdir -p .release/NicoComicRealESRGANAnime4x-v0.1.0
+cp -R .release/NicoComicRealESRGANAnime4x-v0.1.0.mlpackage \
+  .release/NicoComicRealESRGANAnime4x-v0.1.0/
+cp -R LICENSES .release/NicoComicRealESRGANAnime4x-v0.1.0/
+COPYFILE_DISABLE=1 zip -qry \
+  .release/NicoComicRealESRGANAnime4x-v0.1.0.zip \
+  .release/NicoComicRealESRGANAnime4x-v0.1.0
+```
+
+The converter rejects any other source-weight digest, loads all parameters
+strictly, and compares a deterministic random prediction with PyTorch. The
+published conversion measured mean absolute error `0.000882` and maximum
+absolute error `0.002839`; `coremlcompiler` also compiled the final package.
+The release ZIP digest is recorded in [`checksums.txt`](checksums.txt).
+
 ## RT-DETRv4-X Manga109-s Core ML candidate
 
 The first release converts [`tori29umai/rtdetrv4-x-manga109s`](https://huggingface.co/tori29umai/rtdetrv4-x-manga109s) from ONNX to an FP16 Core ML package. The source model and this converted artifact are distributed under Apache-2.0.
