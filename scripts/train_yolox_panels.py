@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Train the fixed NicoComic YOLOX panel experiment on CPU or CUDA."""
+"""Train the fixed NicoComic YOLOX panel experiment on CPU, CUDA, or MPS."""
 
 import argparse
 import json
@@ -20,7 +20,7 @@ def main() -> None:
     parser.add_argument("experiment", type=Path)
     parser.add_argument("data_dir", type=Path)
     parser.add_argument("output_dir", type=Path)
-    parser.add_argument("--device", choices=("cpu", "cuda"), default="cpu")
+    parser.add_argument("--device", choices=("cpu", "cuda", "mps"), default="cpu")
     parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--epochs", type=int)
     parser.add_argument("--workers", type=int, default=4)
@@ -30,6 +30,8 @@ def main() -> None:
 
     if args.device == "cuda" and not torch.cuda.is_available():
         raise SystemExit("CUDA was requested but is unavailable")
+    if args.device == "mps" and not torch.backends.mps.is_available():
+        raise SystemExit("MPS was requested but is unavailable")
     if args.batch_size < 1 or args.workers < 0:
         raise SystemExit("Batch size must be positive and workers cannot be negative")
 

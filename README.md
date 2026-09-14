@@ -101,6 +101,15 @@ The next experiment expands the public training input with `emanuelevivoli/comix
 .venv-training/bin/python scripts/train_yolox_panels.py experiments/yolox_nano_panels_512.py /tmp/nicocomic-comix-v0-coco /tmp/nicocomic-yolox-512 --device cuda
 ```
 
+On Apple silicon with an MPS-enabled PyTorch build, apply the compatibility patch to the pinned YOLOX checkout once, then pass `--device mps`; checkpoints and evaluation keep the same format:
+
+```sh
+python scripts/patch_yolox_mps.py YOLOX
+.venv-training/bin/python scripts/train_yolox_panels.py experiments/yolox_nano_panels_512.py /tmp/nicocomic-comix-v0-coco /tmp/nicocomic-yolox-512 --device mps
+```
+
+The patcher is idempotent and fails if the pinned upstream source no longer matches. The verified M1 Max smoke run and its runtime boundary are recorded in [`reports/2026-09-14-apple-mps-smoke.md`](reports/2026-09-14-apple-mps-smoke.md).
+
 The downloader and converter use Python's standard library plus Pillow already required by training. They verify every shard against the checked-in byte length and SHA-256, exclude the ambiguous `first-page` class, use story boxes as positives, retain cover/advertisement/text-story pages as whole-page negatives, and split by comic rather than page to prevent book leakage. The provenance and first-shard audit are in [`reports/2026-09-14-comix-v0-data-audit.md`](reports/2026-09-14-comix-v0-data-audit.md).
 
 For the full free-GPU run, open [`notebooks/train_yolox_nano_comix_512_colab.ipynb`](notebooks/train_yolox_nano_comix_512_colab.ipynb). It downloads all verified shards, converts them, trains the fixed 512 model, retains checkpoints at the experiment evaluation interval for later private-gate selection, reports public pseudo-label validation, and exports ONNX without accessing private data. Keep 640 as the single fallback size if 512 misses the unchanged private quality gate.
